@@ -693,67 +693,67 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     if (leadEmail()) body.leadEmail = leadEmail();
 
     if (action) body.action = action;
-      console.log('calling');
-      const result = await sendMessageQuery({
-        chatflowid: props.chatflowid,
-        apiHost: props.apiHost,
-        body: { ...body, streaming: false },
-        onRequest: props.onRequest,
+    console.log('calling');
+    const result = await sendMessageQuery({
+      chatflowid: props.chatflowid,
+      apiHost: props.apiHost,
+      body: { ...body, streaming: false },
+      onRequest: props.onRequest,
+    });
+
+    if (result.data) {
+      const data = result.data;
+
+      let text = '';
+      if (data.text) text = data.text;
+      else if (data.json) text = JSON.stringify(data.json, null, 2);
+      else text = JSON.stringify(data, null, 2);
+
+      if (data?.chatId) setChatId(data.chatId);
+
+      playReceiveSound();
+
+      setMessages((prevMessages) => {
+        const allMessages = [...cloneDeep(prevMessages)];
+        const newMessage = {
+          message: text,
+          id: data?.chatMessageId,
+          sourceDocuments: data?.sourceDocuments,
+          usedTools: data?.usedTools,
+          fileAnnotations: data?.fileAnnotations,
+          agentReasoning: data?.agentReasoning,
+          action: data?.action,
+          artifacts: data?.artifacts,
+          type: 'apiMessage' as messageType,
+          feedback: null,
+          dateTime: new Date().toISOString(),
+        };
+        allMessages.push(newMessage);
+        addChatMessage(allMessages);
+        return allMessages;
       });
 
-      if (result.data) {
-        const data = result.data;
+      updateMetadata(data, value);
 
-        let text = '';
-        if (data.text) text = data.text;
-        else if (data.json) text = JSON.stringify(data.json, null, 2);
-        else text = JSON.stringify(data, null, 2);
-
-        if (data?.chatId) setChatId(data.chatId);
-
-        playReceiveSound();
-
-        setMessages((prevMessages) => {
-          const allMessages = [...cloneDeep(prevMessages)];
-          const newMessage = {
-            message: text,
-            id: data?.chatMessageId,
-            sourceDocuments: data?.sourceDocuments,
-            usedTools: data?.usedTools,
-            fileAnnotations: data?.fileAnnotations,
-            agentReasoning: data?.agentReasoning,
-            action: data?.action,
-            artifacts: data?.artifacts,
-            type: 'apiMessage' as messageType,
-            feedback: null,
-            dateTime: new Date().toISOString(),
-          };
-          allMessages.push(newMessage);
-          addChatMessage(allMessages);
-          return allMessages;
-        });
-
-        updateMetadata(data, value);
-
-        setLoading(false);
-        setUserInput('');
-        setUploadedFiles([]);
-        scrollToBottom();
-      }
-      if (result.error) {
-        const error = result.error;
-        console.error(error);
-        if (typeof error === 'object') {
-          handleError(`Error: ${error?.message.replaceAll('Error:', ' ')}`);
-          return;
-        }
-        if (typeof error === 'string') {
-          handleError(error);
-          return;
-        }
-        handleError();
+      setLoading(false);
+      setUserInput('');
+      setUploadedFiles([]);
+      scrollToBottom();
+    }
+    if (result.error) {
+      const error = result.error;
+      console.error(error);
+      if (typeof error === 'object') {
+        handleError(`Error: ${error?.message.replaceAll('Error:', ' ')}`);
         return;
       }
+      if (typeof error === 'string') {
+        handleError(error);
+        return;
+      }
+      handleError();
+      return;
+    }
 
     // Update last question to avoid saving base64 data to localStorage
     if (uploads && uploads.length > 0) {
