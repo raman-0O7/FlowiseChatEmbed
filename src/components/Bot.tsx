@@ -783,6 +783,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     if (isChatFlowAvailableToStream() ? false : false) {
       fetchResponseFromEventStream(props.chatflowid, body);
     } else {
+      console.log("calling")
       const result = await sendMessageQuery({
         chatflowid: props.chatflowid,
         apiHost: props.apiHost,
