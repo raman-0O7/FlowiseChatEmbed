@@ -553,7 +553,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     fetchEventSource(`${props.apiHost}/api/v1/prediction/${chatflowid}`, {
       openWhenHidden: true,
       method: 'POST',
-      body: JSON.stringify({...params, streaming: false}),
+      body: JSON.stringify({ ...params, streaming: false }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -787,7 +787,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
       const result = await sendMessageQuery({
         chatflowid: props.chatflowid,
         apiHost: props.apiHost,
-        body: {...body, streaming: false},
+        body: { ...body, streaming: false },
         onRequest: props.onRequest,
       });
 
