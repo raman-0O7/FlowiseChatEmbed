@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   sendMessageQuery,
   upsertVectorStoreWithFormData,
-  isStreamAvailableQuery,
   IncomingInput,
   getChatbotConfig,
   FeedbackRatingType,
@@ -271,7 +270,6 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     { equals: false },
   );
 
-  const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false);
   const [chatId, setChatId] = createSignal('');
   const [isMessageStopping, setIsMessageStopping] = createSignal(false);
   const [starterPrompts, setStarterPrompts] = createSignal<string[]>([], { equals: false });
@@ -546,90 +544,6 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }
   };
 
-  const fetchResponseFromEventStream = async (chatflowid: string, params: any) => {
-    const chatId = params.chatId;
-    const input = params.question;
-    params.streaming = false;
-    fetchEventSource(`${props.apiHost}/api/v1/prediction/${chatflowid}`, {
-      openWhenHidden: true,
-      method: 'POST',
-      body: JSON.stringify({ ...params, streaming: false }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      async onopen(response) {
-        if (response.ok && response.headers.get('content-type')?.startsWith(EventStreamContentType)) {
-          return; // everything's good
-        } else if (response.status === 429) {
-          const errMessage = (await response.text()) ?? 'Too many requests. Please try again later.';
-          handleError(errMessage, true);
-          throw new Error(errMessage);
-        } else if (response.status === 403) {
-          const errMessage = (await response.text()) ?? 'Unauthorized';
-          handleError(errMessage);
-          throw new Error(errMessage);
-        } else if (response.status === 401) {
-          const errMessage = (await response.text()) ?? 'Unauthenticated';
-          handleError(errMessage);
-          throw new Error(errMessage);
-        } else {
-          throw new Error();
-        }
-      },
-      async onmessage(ev) {
-        const payload = JSON.parse(ev.data);
-        switch (payload.event) {
-          case 'start':
-            setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }]);
-            break;
-          case 'token':
-            updateLastMessage(payload.data);
-            break;
-          case 'sourceDocuments':
-            updateLastMessageSourceDocuments(payload.data);
-            break;
-          case 'usedTools':
-            updateLastMessageUsedTools(payload.data);
-            break;
-          case 'fileAnnotations':
-            updateLastMessageFileAnnotations(payload.data);
-            break;
-          case 'agentReasoning':
-            updateLastMessageAgentReasoning(payload.data);
-            break;
-          case 'action':
-            updateLastMessageAction(payload.data);
-            break;
-          case 'artifacts':
-            updateLastMessageArtifacts(payload.data);
-            break;
-          case 'metadata':
-            updateMetadata(payload.data, input);
-            break;
-          case 'error':
-            updateErrorMessage(payload.data);
-            break;
-          case 'abort':
-            abortMessage();
-            closeResponse();
-            break;
-          case 'end':
-            setLocalStorageChatflow(chatflowid, chatId);
-            closeResponse();
-            break;
-        }
-      },
-      async onclose() {
-        closeResponse();
-      },
-      onerror(err) {
-        console.error('EventSource Error: ', err);
-        closeResponse();
-        throw err;
-      },
-    });
-  };
-
   const closeResponse = () => {
     setLoading(false);
     setUserInput('');
@@ -779,10 +693,6 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     if (leadEmail()) body.leadEmail = leadEmail();
 
     if (action) body.action = action;
-
-    if (isChatFlowAvailableToStream() ? false : false) {
-      fetchResponseFromEventStream(props.chatflowid, body);
-    } else {
       console.log('calling');
       const result = await sendMessageQuery({
         chatflowid: props.chatflowid,
@@ -844,7 +754,6 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
         handleError();
         return;
       }
-    }
 
     // Update last question to avoid saving base64 data to localStorage
     if (uploads && uploads.length > 0) {
@@ -991,17 +900,6 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
 
       const filteredMessages = loadedMessages.filter((message) => message.type !== 'leadCaptureMessage');
       setMessages([...filteredMessages]);
-    }
-
-    // Determine if particular chatflow is available for streaming
-    const { data } = await isStreamAvailableQuery({
-      chatflowid: props.chatflowid,
-      apiHost: props.apiHost,
-      onRequest: props.onRequest,
-    });
-
-    if (data) {
-      setIsChatFlowAvailableToStream(false);
     }
 
     // Get the chatbotConfig

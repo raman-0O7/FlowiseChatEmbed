@@ -72,10 +72,6 @@ export declare const getChatbotConfig: ({ chatflowid, apiHost, onRequest }: Mess
     data?: any;
     error?: Error | undefined;
 }>;
-export declare const isStreamAvailableQuery: ({ chatflowid, apiHost, onRequest }: MessageRequest) => Promise<{
-    data?: any;
-    error?: Error | undefined;
-}>;
 export declare const sendFileDownloadQuery: ({ apiHost, body, onRequest }: MessageRequest) => Promise<{
     data?: any;
     error?: Error | undefined;

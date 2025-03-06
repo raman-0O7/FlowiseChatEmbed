@@ -115,13 +115,6 @@ export const getChatbotConfig = ({ chatflowid, apiHost = 'http://localhost:3000'
     onRequest: onRequest,
   });
 
-export const isStreamAvailableQuery = ({ chatflowid, apiHost = 'http://localhost:3000', onRequest }: MessageRequest) =>
-  sendRequest<any>({
-    method: 'GET',
-    url: `${apiHost}/api/v1/chatflows-streaming/${chatflowid}`,
-    onRequest: onRequest,
-  });
-
 export const sendFileDownloadQuery = ({ apiHost = 'http://localhost:3000', body, onRequest }: MessageRequest) =>
   sendRequest<any>({
     method: 'POST',
