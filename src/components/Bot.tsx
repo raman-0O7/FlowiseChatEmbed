@@ -769,7 +769,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     const body: IncomingInput = {
       question: value,
       chatId: chatId(),
-      streaming: false
+      streaming: false,
     };
 
     if (uploads && uploads.length > 0) body.uploads = uploads;
