@@ -780,7 +780,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
 
     if (action) body.action = action;
 
-    if (isChatFlowAvailableToStream()) {
+    if (isChatFlowAvailableToStream()? false: false) {
       fetchResponseFromEventStream(props.chatflowid, body);
     } else {
       const result = await sendMessageQuery({
