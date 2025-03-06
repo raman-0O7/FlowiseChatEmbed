@@ -8,6 +8,7 @@ export type IncomingInput = {
     fileName?: string;
     leadEmail?: string;
     action?: IAction;
+    streaming?: boolean;
 };
 type BaseRequest = {
     apiHost?: string;
