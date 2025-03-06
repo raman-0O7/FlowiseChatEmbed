@@ -10,6 +10,7 @@ export type IncomingInput = {
   fileName?: string; // Only for assistant
   leadEmail?: string;
   action?: IAction;
+  streaming?: boolean;
 };
 
 type BaseRequest = {

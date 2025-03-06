@@ -549,7 +549,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
   const fetchResponseFromEventStream = async (chatflowid: string, params: any) => {
     const chatId = params.chatId;
     const input = params.question;
-    params.streaming = true;
+    params.streaming = false;
     fetchEventSource(`${props.apiHost}/api/v1/prediction/${chatflowid}`, {
       openWhenHidden: true,
       method: 'POST',
@@ -769,6 +769,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     const body: IncomingInput = {
       question: value,
       chatId: chatId(),
+      streaming: false
     };
 
     if (uploads && uploads.length > 0) body.uploads = uploads;
